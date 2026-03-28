@@ -26,48 +26,48 @@ class _loginpageState extends State<loginpage> {
       const SnackBar(content: Text("Please fill all fields")),
     );
 
-  } else {
+    return;
+  }
 
-    try {
+  try {
 
-      // ignore: unused_local_variable
-      UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+    await _auth.signInWithEmailAndPassword(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login Successful")),
-      );
+    if (!mounted) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Login Successful")),
+    );
 
-    } on FirebaseAuthException catch (e) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomePage(),
+      ),
+    );
 
-      
+  } on FirebaseAuthException catch (e) {
 
-      if (e.code == 'user-not-found') {
-        message = "No user found with this email";
-      } 
-      else if (e.code == 'wrong-password') {
-        message = "Incorrect password";
-      }
-      else if (e.code == 'invalid-email') {
-        message = "Invalid email format";
-      }
+    String message = "Login failed";
 
-      String message = "Login failed";
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+    if (e.code == 'user-not-found') {
+      message = "No user found with this email";
+    } 
+    else if (e.code == 'wrong-password') {
+      message = "Incorrect password";
     }
+    else if (e.code == 'invalid-email') {
+      message = "Invalid email format";
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
 
