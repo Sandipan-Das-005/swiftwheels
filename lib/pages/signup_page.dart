@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -12,29 +13,66 @@ class _SignupPageState extends State<SignupPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void signup() {
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
+
+  Future<void> signup() async {
+
+  if (nameController.text.isEmpty ||
+      emailController.text.isEmpty ||
+      passwordController.text.isEmpty ||
+      confirmPasswordController.text.isEmpty) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please fill all fields")),
+    );
+
+  } else if (passwordController.text != confirmPasswordController.text) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Passwords do not match")),
+    );
+
+  } else {
+
+    try {
+
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
-    } else if (passwordController.text !=
-        confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
-    } else {
+
+      // store user's name in firebase profile
+      await userCredential.user!
+          .updateDisplayName(nameController.text.trim());
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Signup Successful")),
       );
 
-      // Go back to login page
       Navigator.pop(context);
+
+    } on FirebaseAuthException catch (e) {
+
+      String message = "Signup failed";
+
+      if (e.code == 'email-already-in-use') {
+        message = "Email already registered";
+      } 
+      else if (e.code == 'weak-password') {
+        message = "Password must be at least 6 characters";
+      }
+      else if (e.code == 'invalid-email') {
+        message = "Invalid email format";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

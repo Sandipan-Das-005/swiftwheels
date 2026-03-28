@@ -2,6 +2,9 @@
 import 'homepage.dart';
 import 'package:flutter/material.dart';
 import 'signup_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
 class loginpage extends StatefulWidget {
   const loginpage({super.key});
 
@@ -12,25 +15,62 @@ class loginpage extends StatefulWidget {
 class _loginpageState extends State<loginpage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void login() {
-    if (emailController.text.isEmpty ||
-        passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
+  Future<void> login() async {
+
+  if (emailController.text.isEmpty ||
+      passwordController.text.isEmpty) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please fill all fields")),
+    );
+
+  } else {
+
+    try {
+
+      // ignore: unused_local_variable
+      UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
-    } else {
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Login Successful")),
       );
+
       Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomePage(),
-      ),
-    );
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomePage(),
+        ),
+      );
+
+    } on FirebaseAuthException catch (e) {
+
+      
+
+      if (e.code == 'user-not-found') {
+        message = "No user found with this email";
+      } 
+      else if (e.code == 'wrong-password') {
+        message = "Incorrect password";
+      }
+      else if (e.code == 'invalid-email') {
+        message = "Invalid email format";
+      }
+
+      String message = "Login failed";
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
