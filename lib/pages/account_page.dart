@@ -1,4 +1,5 @@
 import 'package:carrental/pages/loginpage.dart';
+import 'package:carrental/pages/my_bookings_page.dart';
 import 'package:flutter/material.dart';
 
 class AccountPage extends StatelessWidget {
@@ -40,7 +41,14 @@ class AccountPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.history),
               title: const Text("My Bookings"),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MyBookingsPage(),
+                  ),
+                );
+              },
             ),
 
             ListTile(
